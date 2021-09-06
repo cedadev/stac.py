@@ -43,9 +43,9 @@ class STAC:
         self._request_kwargs = request_kwargs
 
     @property
-    def conformance(self): # pragma: no cover
+    def conformance(self):  # pragma: no cover
         """Return the list of conformance classes that the server conforms to."""
-        return Utils._get('{}/conformance'.format(self._url),  **self._request_kwargs)
+        return Utils._get('{}/conformance'.format(self._url), **self._request_kwargs)
 
     @property
     def catalog(self):
@@ -61,8 +61,8 @@ class STAC:
             self._catalog = Catalog(response, self._validate)
 
         if not self._collections:
-            self.collections       
-        
+            self.collections
+
         for i in self._catalog.links:
             if i.rel == 'child':
                 if '?' in i.href:  # pragma: no cover
@@ -71,7 +71,6 @@ class STAC:
                 else:
                     self._collections[i.href.split('/')[-1]] = None
         return list(self._collections.keys())
-
 
     @property
     def collections(self):
@@ -82,10 +81,10 @@ class STAC:
         """
         url = '/'.join(self._url.split('/')[:-1]) if self._url.endswith('/stac') else self._url
         data = Utils._get(f'{url.rstrip("/")}/collections{self._access_token}', **self._request_kwargs)
-        self._collections = {collection['id']: Collection(collection, self._validate) for collection in data['collections']}
+        self._collections = {collection['id']: Collection(collection, self._validate, **self._request_kwargs)
+                             for collection in data['collections']}
 
         return self._collections
-
 
     def collection(self, collection_id) -> Collection:
         """Return the given collection.
@@ -97,16 +96,16 @@ class STAC:
         :rtype: dict
         """
         if collection_id in self._collections.keys() and \
-            self._collections[collection_id] is not None:
+                self._collections[collection_id] is not None:
             return self._collections[collection_id]
         try:
             url = '/'.join(self._url.split('/')[:-1]) if self._url.endswith('/stac') else self._url
-            data = Utils._get(f'{url.rstrip("/")}/collections/{collection_id}{self._access_token}',  **self._request_kwargs)
-            self._collections[collection_id] = Collection(data, self._validate)
+            data = Utils._get(f'{url.rstrip("/")}/collections/{collection_id}{self._access_token}',
+                              **self._request_kwargs)
+            self._collections[collection_id] = Collection(data, self._validate, **self._request_kwargs)
         except HTTPError as e:
             raise KeyError(f'Could not retrieve information for collection: {collection_id}')
         return self._collections[collection_id]
-
 
     def search(self, filter=None):
         """Retrieve Items matching a filter.
@@ -120,12 +119,12 @@ class STAC:
         if not self._catalog:  # pragma: no cover
             self.catalog
 
-        url = f'{self._url}/search{self._access_token}'
+        url = f"{self._url.rstrip('/') if self._url[-1] == '/' else self._url}/search{self._access_token}"
 
         if filter is not None and 'bbox' in filter:
             filter['bbox'] = Utils.build_bbox_as_str(filter['bbox'])
 
-        data = Utils._get(url, params=filter,  **self._request_kwargs)
+        data = Utils._get(url, params=filter, **self._request_kwargs)
         return ItemCollection(data, self._validate)
 
     @property
@@ -138,7 +137,7 @@ class STAC:
         text = 'stac("{}")'.format(self.url)
         return text
 
-    def _repr_html_(self): # pragma: no cover
+    def _repr_html_(self):  # pragma: no cover
         """HTML repr."""
         collections = str()
         for collection in self.catalog:
