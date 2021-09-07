@@ -119,7 +119,7 @@ class STAC:
         if not self._catalog:  # pragma: no cover
             self.catalog
 
-        url = f'{self._url}/search{self._access_token}'
+        url = f"{self._url.rstrip('/') if self._url[-1] == '/' else self._url}/search{self._access_token}"
 
         if filter is not None and 'bbox' in filter:
             filter['bbox'] = Utils.build_bbox_as_str(filter['bbox'])
