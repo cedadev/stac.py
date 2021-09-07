@@ -94,22 +94,28 @@ class Extent(dict):
 class Collection(Catalog):
     """The STAC Collection."""
 
-    def __init__(self, data, validate=False):
+    def __init__(self, data, validate=False, **request_kwargs):
         """Initialize instance with dictionary data.
 
         :param data: Dict with collection metadata.
         :param validate: true if the Collection should be validate using its jsonschema. Default is False.
         """
         self._validate = validate
+        self._request_kwargs = request_kwargs
         super(Collection, self).__init__(data or {}, validate)
 
         self._schema = json.loads(resource_string(__name__, f'jsonschemas/{self.stac_version}/collection.json'))
 
         if self._validate:
             Utils.validate(self)
-
-        self._summaries = {k: Stats(v) for k, v in self['summaries'].items()} if 'summaries' in self else {}
-        self._providers = [Provider(provider) for provider in self['providers']] if 'providers' in self else []
+        try:
+            self._summaries = {k: Stats(v) for k, v in self['summaries'].items()} if 'summaries' in self else {}
+        except TypeError:
+            self._summaries = {}
+        try:
+            self._providers = [Provider(provider) for provider in self['providers']] if 'providers' in self else []
+        except TypeError:
+            self._providers = []
 
 
     @property
@@ -168,9 +174,9 @@ class Collection(Catalog):
         for link in self['links']:
             if link['rel'] == 'items':
                 if item_id is not None:
-                    data = Utils._get(f'{link["href"]}/{item_id}')
+                    data = Utils._get(f'{link["href"]}/{item_id}', **self._request_kwargs)
                     return Item(data, self._validate)
-                data = Utils._get(f'{link["href"]}', params=filter)
+                data = Utils._get(f'{link["href"]}', params=filter, **self._request_kwargs)
                 return ItemCollection(data)
         return ItemCollection({})
 
