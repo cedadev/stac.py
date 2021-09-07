@@ -82,7 +82,8 @@ class STAC:
         """
         url = '/'.join(self._url.split('/')[:-1]) if self._url.endswith('/stac') else self._url
         data = Utils._get(f'{url.rstrip("/")}/collections{self._access_token}', **self._request_kwargs)
-        self._collections = {collection['id']: Collection(collection, self._validate) for collection in data['collections']}
+        self._collections = {collection['id']: Collection(collection, self._validate, **self._request_kwargs)
+                             for collection in data['collections']}
 
         return self._collections
 
@@ -102,7 +103,7 @@ class STAC:
         try:
             url = '/'.join(self._url.split('/')[:-1]) if self._url.endswith('/stac') else self._url
             data = Utils._get(f'{url.rstrip("/")}/collections/{collection_id}{self._access_token}',  **self._request_kwargs)
-            self._collections[collection_id] = Collection(data, self._validate)
+            self._collections[collection_id] = Collection(data, self._validate, **self._request_kwargs)
         except HTTPError as e:
             raise KeyError(f'Could not retrieve information for collection: {collection_id}')
         return self._collections[collection_id]
