@@ -43,7 +43,7 @@ class STAC:
         self._request_kwargs = request_kwargs
 
     @property
-    def conformance(self): # pragma: no cover
+    def conformance(self):  # pragma: no cover
         """Return the list of conformance classes that the server conforms to."""
         return Utils._get('{}/conformance'.format(self._url), **self._request_kwargs)
 
@@ -61,8 +61,8 @@ class STAC:
             self._catalog = Catalog(response, self._validate)
 
         if not self._collections:
-            self.collections       
-        
+            self.collections
+
         for i in self._catalog.links:
             if i.rel == 'child':
                 if '?' in i.href:  # pragma: no cover
@@ -71,7 +71,6 @@ class STAC:
                 else:
                     self._collections[i.href.split('/')[-1]] = None
         return list(self._collections.keys())
-
 
     @property
     def collections(self):
@@ -87,7 +86,6 @@ class STAC:
 
         return self._collections
 
-
     def collection(self, collection_id) -> Collection:
         """Return the given collection.
 
@@ -98,7 +96,7 @@ class STAC:
         :rtype: dict
         """
         if collection_id in self._collections.keys() and \
-            self._collections[collection_id] is not None:
+                self._collections[collection_id] is not None:
             return self._collections[collection_id]
         try:
             url = '/'.join(self._url.split('/')[:-1]) if self._url.endswith('/stac') else self._url
@@ -109,8 +107,7 @@ class STAC:
             raise KeyError(f'Could not retrieve information for collection: {collection_id}')
         return self._collections[collection_id]
 
-
-    def search(self, filter=None):
+    def search(self, **filter):
         """Retrieve Items matching a filter.
 
         :param filter: (optional) A dictionary with valid STAC query parameters.
@@ -124,7 +121,7 @@ class STAC:
 
         url = f'{self._url}/search{self._access_token}'
 
-        if filter is not None and 'bbox' in filter:
+        if 'bbox' in filter:
             filter['bbox'] = Utils.build_bbox_as_str(filter['bbox'])
 
         data = Utils._get(url, params=filter, **self._request_kwargs)
@@ -140,7 +137,7 @@ class STAC:
         text = 'stac("{}")'.format(self.url)
         return text
 
-    def _repr_html_(self): # pragma: no cover
+    def _repr_html_(self):  # pragma: no cover
         """HTML repr."""
         collections = str()
         for collection in self.catalog:

@@ -6,7 +6,7 @@
 # under the terms of the MIT License; see LICENSE file for more details.
 #
 """Utility data structures and algorithms."""
-
+import json
 from collections.abc import Iterable
 
 import jinja2
@@ -38,15 +38,15 @@ class Utils:
         """
         response = None
 
-        if params is not None:
-            if 'intersects' in params or 'query' in params:
+        if params:
+            if 'intersects' in params or 'query' in params or 'filter' in params:
                 if 'collections' in params and isinstance(params['collections'], str):
                     params['collections'] = params['collections'].split(',')
                 if 'ids' in params and isinstance(params['ids'], str):
                     params['ids'] = params['ids'].split(',')
                 if 'bbox' in params and isinstance(params['bbox'], str):
                     params['bbox'] = [float(coord) for coord in params['bbox'].split(',')]
-
+                params = json.dumps(params)
                 response = requests.post(url, json=params, **request_kwargs)
             else:
                 if 'collections' in params and type(params['collections']) in (tuple, list):
