@@ -51,7 +51,7 @@ Python Client Library for STAC
         :alt: Join us at Discord
 
 .. image:: https://mybinder.org/badge_logo.svg
-        :target: https://mybinder.org/v2/gh/cedadev/stac.py/usage-notebook?filepath=examples%2Fusage.ipynb
+        :target: https://mybinder.org/v2/gh/cedadev/stac.py/HEAD?labpath=examples%2Fusage.ipynb
         :alt: Binder interactive notebook
 
 About
